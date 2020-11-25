@@ -72,9 +72,15 @@ Zotero.OpenPDF = {
 					Zotero.debug(`Resolved handler is ${handler}`);
 				}
 			}
-			if (handler && (handler.includes('evince') || handler.includes('okular'))) {
-				this._openWithEvinceOrOkular(handler, path, page);
-				opened = true;
+			if (handler) {
+				if (handler.includes('evince') || handler.includes('okular')) {
+					this._openWithEvinceOrOkular(handler, path, page);
+					opened = true;
+				}
+				else if (handler.includes('zathura')) {
+					this._openWithZathura(handler, path, page);
+					opened = true;
+				}
 			}
 			// Fall back to okular and then evince if unknown handler
 			else if (await OS.File.exists('/usr/bin/okular')) {
@@ -309,6 +315,8 @@ Zotero.OpenPDF = {
 		case 'document viewer':
 		case 'evince':
 			return `/usr/bin/evince`;
+		case 'zathura':
+			return `/usr/bin/zathura`;
 		}
 		
 		// TODO: Try to get default from mimeapps.list, etc., in case system default is okular
@@ -321,6 +329,11 @@ Zotero.OpenPDF = {
 	
 	_openWithEvinceOrOkular: function (appPath, filePath, page) {
 		var args = ['-p', page, filePath];
+		Zotero.Utilities.Internal.exec(appPath, args);
+	}
+
+	_openWithZathura: function (appPath, filePath, page) {
+		var args = ['-P', page, filePath];
 		Zotero.Utilities.Internal.exec(appPath, args);
 	}
 }
